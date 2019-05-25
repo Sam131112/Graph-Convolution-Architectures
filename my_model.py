@@ -4,6 +4,30 @@ import torch.nn.functional as F
 from my_layer import GraphConvolutionLayer
 
 
+class SimpleModel(nn.Module):   # Comparison with naive model
+    def __init__(self,nfeat,nhid,nclass):
+        super(SimpleModel,self).__init__()
+        self.fc1 = nn.Linear(nfeat,nhid)
+        self.fc2 = nn.Linear(nhid,nhid)
+        self.fc3 = nn.Linear(nhid,nclass)
+        self.drop = nn.Dropout(0.5)
+        torch.nn.init.xavier_normal_(self.fc1.weight.data)
+        torch.nn.init.normal_(self.fc1.bias.data)
+        torch.nn.init.xavier_normal_(self.fc2.weight.data)
+        torch.nn.init.normal_(self.fc2.bias.data)
+        torch.nn.init.xavier_normal_(self.fc3.weight.data)
+        torch.nn.init.normal_(self.fc3.bias.data)
+
+    def forward(self,x):
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.drop(x)
+        x = self.fc2(x)
+        x = F.relu(x)
+        x = self.drop(x)
+        x = self.fc3(x)
+        return F.log_softmax(x,dim=1)
+
 class GCN(nn.Module):
     def __init__(self,nfeat,nhid,nclass,dropout):
         super(GCN,self).__init__()
