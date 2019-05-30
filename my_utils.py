@@ -5,9 +5,6 @@ import scipy as sp
 import torch
 
 
-
-#ind.cora.allx  ind.cora.ally  ind.cora.graph  ind.cora.test.index  ind.cora.tx  ind.cora.ty  ind.cora.x  ind.cora.y
-
 def get_test_index(f):
     f1 = open(f,"r")
     ids = []
