@@ -21,7 +21,7 @@ optimizer = optim.Adam(model.parameters(),lr = 0.01,weight_decay=5e-4)
 
 model.cuda()
 
-patience = 250
+patience = 500
 
 
 def train(epoch,x,adj,labels):
@@ -53,14 +53,20 @@ for epoch in range(5000):
     val_loss = F.nll_loss(output[idx_train],labels[idx_train])
     if val_loss.item() < best:
         best = val_loss.item()
+        torch.save(model.state_dict(),"saved_model.pth")
         patience_now = 0
     patience_now+=1
+    '''
     if patience_now>=patience:
         print("Train loss, Validation loss :",train_acc,best)
         break
+    '''
 
 
 print("Optimization Finished!")
-
+model = GCN(nfeat=features.shape[1],nhid =256,nclass=labels.max().item()+1,dropout=0.5)
+device = torch.device('cuda')
+model.load_state_dict(torch.load("saved_model.pth"))
+model.cuda()
+model.eval()
 test(features,adj,labels)
-
