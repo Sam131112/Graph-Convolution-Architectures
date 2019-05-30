@@ -2,9 +2,11 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from my_layer import GraphConvolutionLayer
+import math
 
 
-class SimpleModel(nn.Module):   # Comparison with naive model
+
+class SimpleModel(nn.Module):
     def __init__(self,nfeat,nhid,nclass):
         super(SimpleModel,self).__init__()
         self.fc1 = nn.Linear(nfeat,nhid)
@@ -34,9 +36,19 @@ class GCN(nn.Module):
         self.gcn1 = GraphConvolutionLayer(nfeat,nhid)
         self.gcn2 = GraphConvolutionLayer(nhid,nhid)
         self.fc1 = nn.Linear(nhid,nclass)
-        torch.nn.init.xavier_normal_(self.fc1.weight.data)
-        torch.nn.init.normal_(self.fc1.bias.data)
+        self.glorot(self.fc1.weight.data)    # Glorot Inialization
+        self.zeros(self.fc1.bias.data)
+        #torch.nn.init.xavier_normal_(self.fc1.weight.data)
+        #torch.nn.init.normal_(self.fc1.bias.data)
         self.dropout = dropout
+
+    def glorot(self,tensor):
+        if tensor is not None:
+            stdv = math.sqrt(6.0/(tensor.size(-2)+tensor.size(-1)))
+            tensor.data.uniform_(-stdv,stdv)
+    def zeros(self,tensor):
+        if tensor is not None:
+            tensor.data.fill_(0)
 
     def forward(self,x,adj):
         x = F.relu(self.gcn1(x,adj))

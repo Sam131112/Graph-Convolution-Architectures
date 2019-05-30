@@ -31,15 +31,17 @@ def convert_adj_to_sparse(adj):
 
 
 def get_data(cuda="True"):
+    end = [".allx",".ally",".tx",".ty",".x",".y",".graph",".test.index"]
+    _allx,_ally,_te_x,_te_y,_tr_x,_tr_y,_net,_test = [u[0]+u[1] for u in zip(["ind.cora"]*8,end)]  # Change the network here 
 
-    allx = pk.load(open("ind.cora.allx","rb"),encoding="latin1")
-    ally = pk.load(open("ind.cora.ally","rb"),encoding="latin1")
-    te_x = pk.load(open("ind.cora.tx","rb"),encoding="latin1")
-    te_y = pk.load(open("ind.cora.ty","rb"),encoding="latin1")
-    tr_x = pk.load(open("ind.cora.x","rb"),encoding="latin1")
-    tr_y = pk.load(open("ind.cora.y","rb"),encoding="latin1")
-    net = pk.load(open("ind.cora.graph","rb"),encoding="latin1")
-    test_idx = get_test_index("ind.cora.test.index")
+    allx = pk.load(open(_allx,"rb"),encoding="latin1")
+    ally = pk.load(open(_ally,"rb"),encoding="latin1")
+    te_x = pk.load(open(_te_x,"rb"),encoding="latin1")
+    te_y = pk.load(open(_te_y,"rb"),encoding="latin1")
+    tr_x = pk.load(open(_tr_x,"rb"),encoding="latin1")
+    tr_y = pk.load(open(_tr_y,"rb"),encoding="latin1")
+    net = pk.load(open(_net,"rb"),encoding="latin1")
+    test_idx = get_test_index(_test)
     test_idx_reorder = np.sort(test_idx)
     #print(tr_x.shape,te_x.shape,test_id.size,allx.shape)
     features = sp.sparse.vstack((allx,te_x)).tolil()  # because without lil format there is computational burden
@@ -51,7 +53,7 @@ def get_data(cuda="True"):
     idx_val = range(len(tr_y), len(tr_y)+500)
     g = nx.from_dict_of_lists(net)
     adj = nx.to_numpy_array(g,dtype=np.float)
-    adj = adj + np.eye(adj.shape[0])
+    adj = adj + np.eye(adj.shape[0])   # A = A'
     #print(adj[5,2546],adj[2546,5])
     adj = sp.sparse.coo_matrix(adj)
     adj = normalize_adj(adj)
