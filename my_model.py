@@ -33,8 +33,10 @@ class SimpleModel(nn.Module):
 class GCN(nn.Module):
     def __init__(self,nfeat,nhid,nclass,dropout):
         super(GCN,self).__init__()
-        self.gcn1 = GraphConvolutionLayer(nfeat,nhid)
-        self.gcn2 = GraphConvolutionLayer(nhid,nhid)
+        #self.gcn1 = GraphConvolutionLayer(nfeat,nhid)
+        #self.gcn2 = GraphConvolutionLayer(nhid,nhid)
+        self.gcn1 = GraphSageLayer(nfeat,nhid)
+        self.gcn2 = GraphSageLayer(nhid,nhid)
         self.fc1 = nn.Linear(nhid,nclass)
         self.glorot(self.fc1.weight.data)    # Glorot Inialization
         self.zeros(self.fc1.bias.data)
