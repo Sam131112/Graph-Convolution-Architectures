@@ -53,8 +53,8 @@ class GraphSageLayer(torch.nn.Module):
             tensor.data.fill_(0)
 
     
-    def forward(self,x,adj):
-        _x = torch.empty((x.size(0),x.size(0),x.size(1)))
+    def forward(self,x,adj):  # x should be pure adjacency matrix to accomodate grapgsage 
+        _x = torch.empty((x.size(0),x.size(0),x.size(1))) # hence please update utils accordingly
         x1 = torch.empty((x.size(0),x.size(1)))
         _x[:,:,:]=x
         for j in range(x.size(0)):
