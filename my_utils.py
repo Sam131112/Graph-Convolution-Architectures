@@ -33,7 +33,6 @@ def convert_adj_to_sparse(adj):
 def get_data(cuda="True"):
     end = [".allx",".ally",".tx",".ty",".x",".y",".graph",".test.index"]
     _allx,_ally,_te_x,_te_y,_tr_x,_tr_y,_net,_test = [u[0]+u[1] for u in zip(["ind.cora"]*8,end)]  # Change the network here 
-
     allx = pk.load(open(_allx,"rb"),encoding="latin1")
     ally = pk.load(open(_ally,"rb"),encoding="latin1")
     te_x = pk.load(open(_te_x,"rb"),encoding="latin1")
@@ -52,11 +51,12 @@ def get_data(cuda="True"):
     idx_train = range(len(tr_y))
     idx_val = range(len(tr_y), len(tr_y)+500)
     g = nx.from_dict_of_lists(net)
+    print("number of nodes,edges ",g.number_of_nodes(),g.number_of_edges())
     adj = nx.to_numpy_array(g,dtype=np.float)
     adj = adj + np.eye(adj.shape[0])   # A = A'
     #print(adj[5,2546],adj[2546,5])
     adj = sp.sparse.coo_matrix(adj)
-    adj = normalize_adj(adj)
+    #adj = normalize_adj(adj)
     features = normalize_features(features)
     adj = convert_adj_to_sparse(adj)  # this is converted to sparse format due to its immense size
     adj = torch.FloatTensor(adj.to_dense())
@@ -75,8 +75,44 @@ def get_data(cuda="True"):
         idx_val = idx_val.cuda()
         idx_test = idx_test.cuda()
 
-    return adj,features,labels,idx_train,idx_val,idx_test
+    return g,adj,features,labels,idx_train,idx_val,idx_test
     #print(test_id)
+
+def get_data_v1(cuda=True):
+
+# Here the data is obtained from pytorch-geometric to eliminate unnecessary shuffling done in Kipf's code
+    edge_index = pk.load(open("graph.pkl","rb"))
+    row,col = edge_index
+    edges = [(int(u),int(v)) for u,v in zip(row.tolist(),col.tolist())]
+    g = nx.Graph()
+    g.add_edges_from(edges)
+    adj = np.zeros((torch.max(edge_index).item()+1,torch.max(edge_index).item()+1))
+    for u,v in list(g.edges()):
+        adj[u,v] = 1
+        adj[v,u] = 1
+    
+
+    #adj = nx.to_numpy_array(g,dtype=np.float)
+    adj = adj + np.eye(adj.shape[0])
+    adj = torch.FloatTensor(adj)
+    features = pk.load(open("feature.pkl","rb"))
+    features = normalize_features(features.numpy())
+    features = torch.FloatTensor(features)
+    labels = pk.load(open("label.pkl","rb"))
+    idx_train = pk.load(open("train_ids.pkl","rb"))
+    idx_val = pk.load(open("valid_ids.pkl","rb"))
+    idx_test = pk.load(open("test_ids.pkl","rb"))
+    if cuda:
+        features = features.cuda()
+        adj = adj.cuda()
+        labels = labels.cuda()
+        idx_train = idx_train.cuda()
+        idx_val = idx_val.cuda()
+        idx_test = idx_test.cuda()
+    return g,adj,features,labels,idx_train,idx_val,idx_test
+
+
+
 
 
 

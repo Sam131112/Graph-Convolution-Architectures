@@ -36,13 +36,12 @@ class GraphSageLayer(torch.nn.Module):
         super(GraphSageLayer,self).__init__()
         self.in_feature = in_feature
         self.out_feature = out_feature
-        self.K = K
         self.weight = Parameter(torch.Tensor(2*in_feature, out_feature))
         if bias:
             self.bias = Parameter(torch.Tensor(out_feature))
 
-        glorot(self.weight[i])
-        zeros(self.bias[i])
+        self.glorot(self.weight)
+        self.zeros(self.bias)
 
     def glorot(self,tensor):
         if tensor is not None:
@@ -53,18 +52,23 @@ class GraphSageLayer(torch.nn.Module):
             tensor.data.fill_(0)
 
     
-    def forward(self,x,adj):  # x should be pure adjacency matrix to accomodate grapgsage 
-        _x = torch.empty((x.size(0),x.size(0),x.size(1))) # hence please update utils accordingly
-        x1 = torch.empty((x.size(0),x.size(1)))
-        _x[:,:,:]=x
+    def forward(self,x,adj):
+        #_x = torch.empty((x.size(0),x.size(0),x.size(1)))
+        x1 = torch.empty((x.size(0),x.size(1))).cuda()
+        #x1 = torch.empty((x.size(0),x.size(1)))
+        #print("Out for loop",x)
         for j in range(x.size(0)):
                 tmp = adj[j] == 1
-                temp = _x[j][tmp]
+                temp = x[tmp]
+                #print("For loop ",j,temp)
                 temp = torch.mean(temp,0)
                 x1[j] = temp
-
+                #print("For loop ",j,temp)
+        #print("aggregate ",x1)
         n_x = torch.cat((x1,x),1)
+        #print("New Shape ",n_x.shape)
         n_x = torch.matmul(n_x,self.weight)
+        #print("New Shape ",n_x.shape)
         n_x = n_x+self.bias
         return n_x
 

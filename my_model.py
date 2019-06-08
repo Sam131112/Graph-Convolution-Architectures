@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from my_layer import GraphConvolutionLayer
+from my_layer import GraphSageLayer
 import math
 
 
@@ -54,9 +55,11 @@ class GCN(nn.Module):
 
     def forward(self,x,adj):
         x = F.relu(self.gcn1(x,adj))
+        #print("Train ",x)
         x = F.dropout(x,self.dropout)
         x = self.gcn2(x,adj)
         x = self.fc1(x)
+        #print("Train ",x)
         return F.log_softmax(x,dim=1)
 
 
